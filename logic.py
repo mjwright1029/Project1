@@ -37,7 +37,7 @@ class Logic(QMainWindow, Ui_MainWindow):
 
     def log_in(self, ):
         name = re.sub(' +', ' ', self.name_label.text().lower().strip())
-        pin = self.pin_label.text()
+        pin = str(self.pin_label.text())
         self.error_message.hide()
 
         with open('accounts.csv', 'r', newline='', encoding='utf-8') as csvfile:
