@@ -1,5 +1,6 @@
 from logic import *
 
+
 def main():
     application = QApplication([])
     window = Logic()
