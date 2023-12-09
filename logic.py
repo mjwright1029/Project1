@@ -6,7 +6,13 @@ import re
 
 
 class Logic(QMainWindow, Ui_MainWindow):
-    def __init__(self):
+    """
+    Class representing the logic for how the objects will work
+    """
+    def __init__(self) -> None:
+        """
+        Method to set the default text and values of a logic object
+        """
         super().__init__()
         self.setupUi(self)
 
@@ -35,7 +41,10 @@ class Logic(QMainWindow, Ui_MainWindow):
         self.withdraw_button.clicked.connect(self.withdraw)
         self.balance_button.clicked.connect(self.get_balance)
 
-    def log_in(self, ):
+    def log_in(self) -> None:
+        """
+        Method to log a user in to their account if it already exists
+        """
         name = re.sub(' +', ' ', self.name_label.text().lower().strip())
         pin = str(self.pin_label.text())
         self.error_message.hide()
@@ -69,10 +78,31 @@ class Logic(QMainWindow, Ui_MainWindow):
                 self.error_message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
                 return
 
-    def create_account(self):
+    def create_account(self) -> None:
+        """
+        Method to create an account if a valid name and pin are entered
+        """
         new_name = re.sub(' +', ' ', self.name_label.text().strip())
-        new_pin = self.pin_label.text()
+        new_pin = str(self.pin_label.text())
         self.error_message.hide()
+
+        if not self.name_label.text().strip():
+            self.error_message.show()
+            self.error_message.setText('Please enter in a valid name.')
+            self.error_message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            return
+
+        if not self.pin_label.text().strip():
+            self.error_message.show()
+            self.error_message.setText('Please enter in a valid PIN.')
+            self.error_message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            return
+
+        if len(new_pin) != 4:
+            self.error_message.show()
+            self.error_message.setText('Please enter in a valid 4 digit PIN.')
+            self.error_message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            return
 
         if self.check_for_account(new_name, new_pin):
             self.error_message.show()
@@ -99,7 +129,13 @@ class Logic(QMainWindow, Ui_MainWindow):
         self.login_button.hide()
         self.create_button.hide()
 
-    def check_for_account(self, name, pin):
+    def check_for_account(self, name: str, pin: str) -> bool:
+        """
+        Method to check is an account already exists
+        :param name: the name entered for the account
+        :param pin: the PIN entered for the account
+        :return: True if the account exists, False if it doesn't
+        """
         with open('accounts.csv', 'r', newline='', encoding='utf-8') as csvfile:
             content = csv.reader(csvfile, delimiter=',')
 
@@ -108,47 +144,70 @@ class Logic(QMainWindow, Ui_MainWindow):
                     return True
         return False
 
-
-    def deposit(self):
-        amount = float(self.amount_label.text())
-        if amount <= 0:
-            self.balance_display.setText('Please select a higher amount.')
+    def deposit(self) -> bool:
+        """
+        Method to deposit an amount of money
+        """
+        try:
+            amount = float(self.amount_label.text())
+            if amount <= 0:
+                self.balance_display.setText('Please select a valid amount.')
+                self.amount_label.clear()
+                return False
+            else:
+                new_balance = self.get_balance() + amount
+                self.set_balance(new_balance)
+                self.update_balance(new_balance)
+                self.balance_display.setText(f'Deposited ${amount:.2f}')
+                return True
+        except ValueError:
+            self.balance_display.setText('Please select a valid amount.')
             self.amount_label.clear()
-            return False
-        else:
-            new_balance = self.get_balance() + amount
-            self.set_balance(new_balance)
-            self.update_balance(new_balance)
-            self.set_balance(self.get_balance() + amount)
-            self.balance_display.setText(f'Deposited ${amount:.2f}')
-            return True
 
-    def withdraw(self):
-        amount = float(self.amount_label.text())
-        if amount <= 0 or amount > self.__account_balance:
-            self.balance_display.setText('Please select a smaller amount.')
+    def withdraw(self) -> bool:
+        """
+        Method to withdraw an amount of money
+        """
+        try:
+            amount = float(self.amount_label.text())
+            if amount <= 0 or amount > self.__account_balance:
+                self.balance_display.setText('Please select a valid amount.')
+                self.amount_label.clear()
+                return False
+            else:
+                new_balance = self.get_balance() - amount
+                self.set_balance(new_balance)
+                self.update_balance(new_balance)
+                self.balance_display.setText(f'Withdrew ${amount:.2f}')
+                return True
+        except ValueError:
+            self.balance_display.setText('Please select a valid amount.')
             self.amount_label.clear()
-            return False
-        else:
-            new_balance = self.get_balance() - amount
-            self.set_balance(new_balance)
-            self.update_balance(new_balance)
-            self.set_balance(self.get_balance() - amount)
-            self.balance_display.setText(f'Withdrew ${amount:.2f}')
-            return True
 
-    def get_balance(self):
+    def get_balance(self) -> float:
+        """
+        Method to obtain the current account balance
+        :return: the balance amount
+        """
         self.balance_display.setText(f'Current balance is ${self.__account_balance:.2f}')
         self.amount_label.clear()
         return self.__account_balance
 
-    def set_balance(self, value):
+    def set_balance(self, value: float) -> None:
+        """
+        Method to set the balance of the account
+        :param value: the new value of the balance
+        """
         if value < 0:
             self.__account_balance = 0
         else:
             self.__account_balance = value
 
-    def update_balance(self, new_balance):
+    def update_balance(self, new_balance: float) -> None:
+        """
+        Method to update the balance of the csv file
+        :param new_balance: the new value of the balance
+        """
         name = re.sub(' +', ' ', self.name_label.text().lower().strip())
         pin = self.pin_label.text()
 
@@ -163,5 +222,3 @@ class Logic(QMainWindow, Ui_MainWindow):
         with open('accounts.csv', 'w', newline='', encoding='utf-8') as csvfile:
             content = csv.writer(csvfile, delimiter=',')
             content.writerows(rows)
-
-
