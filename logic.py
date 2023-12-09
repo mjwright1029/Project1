@@ -49,6 +49,12 @@ class Logic(QMainWindow, Ui_MainWindow):
         pin = str(self.pin_label.text())
         self.error_message.hide()
 
+        if len(pin) != 4:
+            self.error_message.show()
+            self.error_message.setText('Please enter in a valid 4 digit PIN.')
+            self.error_message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            return
+
         with open('accounts.csv', 'r', newline='', encoding='utf-8') as csvfile:
             content = csv.reader(csvfile, delimiter=',')
 
@@ -147,6 +153,7 @@ class Logic(QMainWindow, Ui_MainWindow):
     def deposit(self) -> bool:
         """
         Method to deposit an amount of money
+        :return: False if the amount is less than or equal to 0, True if not
         """
         try:
             amount = float(self.amount_label.text())
@@ -167,6 +174,7 @@ class Logic(QMainWindow, Ui_MainWindow):
     def withdraw(self) -> bool:
         """
         Method to withdraw an amount of money
+        :return: False if amount is less than or equal to 0 or greater than the balance, True if not
         """
         try:
             amount = float(self.amount_label.text())
